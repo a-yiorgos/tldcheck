@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+ 
+## To grab the TLDs: wget -c http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+ 
+use Net::DNS;
+ 
+$check = shift or die;
+ 
+open F, "< tlds-alpha-by-domain.txt" or die;
+while (<F>) {
+	next if (m/^#/);
+	chop;
+	push @tlds, $_;
+}
+close F;
+ 
+foreach $i (@tlds) {
+	my $domain = $check . "." . $i . ".";
+	my $res = Net::DNS::Resolver->new;
+	my $query = $res->query($domain, "NS");
+ 
+	if ($query) {
+		## foreach $rr (grep { $_->type eq 'NS' } $query->answer) { print $rr->nsdname, "\n"; }
+		print $domain, "\n";
+	}
+}
